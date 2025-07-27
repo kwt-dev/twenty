@@ -70,6 +70,7 @@
     "@lingui/cli": "^5.1.2",
     "@nestjs/cli": "10.3.0",
     "@nx/js": "18.3.3",
+    "@twenty/trib-messages-module": "workspace:*",
     "@types/express-session": "^1.18.0",
     "@types/lodash.differencewith": "^4.5.9",
     "@types/lodash.isempty": "^4.4.7",

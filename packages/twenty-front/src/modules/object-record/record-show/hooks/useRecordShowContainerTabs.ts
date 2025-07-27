@@ -16,6 +16,7 @@ import {
   IconCalendarEvent,
   IconHome,
   IconMail,
+  IconMessage,
   IconNotes,
   IconSettings,
 } from 'twenty-ui/display';
@@ -124,6 +125,20 @@ export const useRecordShowContainerTabs = (
               ifFeaturesDisabled: [],
               ifRequiredObjectsInactive: [],
               ifRelationsMissing: [],
+            },
+          },
+          textMessages: {
+            title: 'Text Messages',
+            position: 610,
+            Icon: IconMessage,
+            cards: [{ type: CardType.TribMessageCard }],
+            hide: {
+              ifMobile: false,
+              ifDesktop: false,
+              ifInRightDrawer: false,
+              ifFeaturesDisabled: [],
+              ifRequiredObjectsInactive: [],
+              ifRelationsMissing: ['tribMessageParticipants'],
             },
           },
           calendar: {

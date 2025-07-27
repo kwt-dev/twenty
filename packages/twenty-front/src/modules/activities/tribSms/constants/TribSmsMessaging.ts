@@ -1,0 +1,1 @@
+export const TRIB_SMS_MESSAGES_DEFAULT_PAGE_SIZE = 20;

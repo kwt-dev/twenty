@@ -4,6 +4,7 @@ import { EmailThreads } from '@/activities/emails/components/EmailThreads';
 import { Attachments } from '@/activities/files/components/Attachments';
 import { Notes } from '@/activities/notes/components/Notes';
 import { ObjectTasks } from '@/activities/tasks/components/ObjectTasks';
+import { TribMessageThreads } from '@/activities/tribSms/components/TribMessageThreads';
 import { TimelineActivities } from '@/activities/timeline-activities/components/TimelineActivities';
 import { ActivityTargetableObject } from '@/activities/types/ActivityTargetableEntity';
 import { FieldsCard } from '@/object-record/record-show/components/FieldsCard';
@@ -134,6 +135,10 @@ export const CardComponents: Record<CardType, CardComponentType> = {
 
   [CardType.CalendarCard]: ({ targetableObject }) => (
     <Calendar targetableObject={targetableObject} />
+  ),
+
+  [CardType.TribMessageCard]: ({ targetableObject }) => (
+    <TribMessageThreads targetableObject={targetableObject} />
   ),
 
   [CardType.WorkflowCard]: ({ targetableObject }) => {

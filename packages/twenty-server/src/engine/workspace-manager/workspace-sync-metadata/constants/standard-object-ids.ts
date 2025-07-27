@@ -50,4 +50,10 @@ export const STANDARD_OBJECT_IDS = {
   workflowVersion: '20202020-d65d-4ab9-9344-d77bfb376a3d',
   workspaceMember: '20202020-3319-4234-a34c-82d5c0e881a6',
   workflowAutomatedTrigger: '20202020-3319-4234-a34c-7f3b9d2e4d1f',
+  // TRIB Entity IDs for workspace sync
+  tribMessage: '20202020-1a2b-4c3d-8e9f-123456789abc',
+  tribThread: '20202020-4d5e-6f7a-2b3c-456789012def',
+  tribPhoneNumber: '20202020-7a8b-9c0d-5e6f-789012345012',
+  tribDelivery: '20202020-8b9c-0d1e-6f7a-890123456123',
+  tribConsent: '20202020-5a6b-4c7d-8e9f-567890123456',
 };

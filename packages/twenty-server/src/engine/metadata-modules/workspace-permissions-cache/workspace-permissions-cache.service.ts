@@ -287,8 +287,27 @@ export class WorkspacePermissionsCacheService {
       where: {
         workspaceId,
       },
-      select: ['id', 'isSystem', 'standardId'],
+      select: ['id', 'isSystem', 'standardId', 'nameSingular'],
     });
+
+    // 🔍 DIAGNOSTIC: Log metadata entities loaded for permission cache
+    console.log('🔍 PERMISSION CACHE DIAGNOSTIC - Loaded object metadata entities:');
+    console.log('Workspace ID:', workspaceId);
+    console.log('Total entities:', workspaceObjectMetadata.length);
+    const tribEntities = workspaceObjectMetadata.filter(entity => 
+      entity.nameSingular?.startsWith('trib')
+    );
+    console.log('TRIB entities found:', tribEntities.length);
+    if (tribEntities.length > 0) {
+      console.log('TRIB entities:', tribEntities.map(e => ({
+        id: e.id,
+        nameSingular: e.nameSingular,
+        standardId: e.standardId,
+        isSystem: e.isSystem
+      })));
+    } else {
+      console.log('❌ NO TRIB ENTITIES FOUND IN PERMISSION CACHE!');
+    }
 
     return workspaceObjectMetadata;
   }

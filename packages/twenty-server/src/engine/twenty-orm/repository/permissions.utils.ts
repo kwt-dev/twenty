@@ -43,6 +43,8 @@ export const validateOperationIsPermittedOrThrow = ({
     objectMetadataMaps.idByNameSingular[entityName];
 
   if (!isNonEmptyString(objectMetadataIdForEntity)) {
+    if (entityName && entityName.includes('trib')) {
+    }
     throw new PermissionsException(
       PermissionsExceptionMessage.PERMISSION_DENIED,
       PermissionsExceptionCode.PERMISSION_DENIED,
@@ -70,6 +72,8 @@ export const validateOperationIsPermittedOrThrow = ({
   switch (operationType) {
     case 'select':
       if (!permissionsForEntity?.canRead) {
+        if (entityName && entityName.includes('trib')) {
+        }
         throw new PermissionsException(
           PermissionsExceptionMessage.PERMISSION_DENIED,
           PermissionsExceptionCode.PERMISSION_DENIED,

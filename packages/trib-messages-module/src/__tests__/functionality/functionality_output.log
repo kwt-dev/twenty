@@ -1,0 +1,59 @@
+=== Functionality Test: Slice 8f - TRIB Webhook Controller ===
+Testing real Twilio webhook controller with signature validation and delivery status processing
+Test directory: /var/folders/2x/5mqqp02j36v079m96nx8fjs00000gn/T/tmp.ghFfb1YnUW
+Checking prerequisites...
+All prerequisites satisfied
+Starting webhook server with Docker...
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 219B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:18-alpine
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 3.92kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e
+#5 resolve docker.io/library/node:18-alpine@sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] WORKDIR /app
+#6 CACHED
+
+#7 [3/4] RUN npm init -y && npm install express
+#7 CACHED
+
+#8 [4/4] COPY webhook-server.js .
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:b53911e9a491f985687e520f5e85faadc30c61437c619a17350748cd7e839578 done
+#9 exporting config sha256:21e4df9c8e62adab320359a44445f7d87b60d66a4336e54149093f1faca63c2e done
+#9 exporting attestation manifest sha256:d60201572cd232eb48b626722fdb4a9c9350633911cce005ede73f7688dd0820 done
+#9 exporting manifest list sha256:d11944a3d5b1ff1f61aa5261d02629207b83ed62a9967a86265182205dc70043 done
+#9 naming to docker.io/library/trib-webhook-test:latest done
+#9 unpacking to docker.io/library/trib-webhook-test:latest done
+#9 DONE 0.0s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/irz96f5xyyu9ojqq3i8kfbtth
+dca6f63dd09d2850e7c92d0f8946f5fa2f6b58afdf406067bf8805d3f0fc7f51
+Waiting for webhook server to be ready...
+Webhook server is ready
+
+=== Test 1: Valid Delivery Status Webhook ===
+Sending webhook with valid signature...
+Payload: MessageSid=SMfunctionality123456789&AccountSid=ACfunctionality123456789&MessageStatus=delivered&To=%2B15552222222&From=%2B15551111111&Body=Test%20message
+Signature: BSdV9UJbZ0zquCbmVo8tAvZ4828=
+HTTP Status: 200
+Response: {"statusUpdated":true,"deliveryId":"test-delivery-123","newStatus":"DELIVERED","processedAt":"2025-07-16T16:49:12.405Z"}
+PASS: Valid delivery status webhook processing
+Stopping webhook server...

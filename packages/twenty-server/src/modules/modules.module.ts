@@ -8,9 +8,39 @@ import { MessagingModule } from 'src/modules/messaging/messaging.module';
 import { ViewModule } from 'src/modules/view/view.module';
 import { WorkflowModule } from 'src/modules/workflow/workflow.module';
 
+import { TribMessagesModule, TRIB_TOKENS } from '@twenty/trib-messages-module';
+import { RedisClientService } from 'src/engine/core-modules/redis-client/redis-client.service';
+import { getQueueToken } from 'src/engine/core-modules/message-queue/utils/get-queue-token.util';
+import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { TribMessageWorkspaceRepository } from 'src/modules/trib/repositories/trib-message-workspace.repository';
+import { TribWorkspaceService } from 'src/modules/trib/services/trib-workspace.service';
+import { SmsQueueJob } from 'src/modules/trib/jobs/sms-queue.job';
+
 @Module({
   imports: [
     MessagingModule,
+    TribMessagesModule.forRoot([
+      // Override repository with workspace-aware implementation
+      {
+        provide: TRIB_TOKENS.MESSAGE_REPOSITORY,
+        useClass: TribMessageWorkspaceRepository,
+      },
+      // Connect Twenty's Redis service
+      {
+        provide: TRIB_TOKENS.REDIS_CLIENT,
+        useExisting: RedisClientService,
+      },
+      // Connect Twenty's message queue service
+      {
+        provide: TRIB_TOKENS.MESSAGE_QUEUE_SERVICE,
+        useExisting: getQueueToken(MessageQueue.messagingQueue)
+      },
+      // Connect Twenty's Person repository for SMS phone matching
+      {
+        provide: TRIB_TOKENS.PERSON_REPOSITORY,
+        useClass: TribWorkspaceService,
+      },
+    ]),
     CalendarModule,
     ConnectedAccountModule,
     ViewModule,
@@ -18,7 +48,14 @@ import { WorkflowModule } from 'src/modules/workflow/workflow.module';
     FavoriteFolderModule,
     FavoriteModule,
   ],
-  providers: [],
-  exports: [],
+  providers: [
+    TribMessageWorkspaceRepository,
+    TribWorkspaceService, // Bridge service for Person-SMS linking
+    SmsQueueJob, // Twenty-style SMS queue processor
+  ],
+  exports: [
+    TribWorkspaceService, // Export for use by other modules
+    TribMessagesModule, // Export configured TribMessagesModule for timeline module
+  ],
 })
 export class ModulesModule {}

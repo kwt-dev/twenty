@@ -30,6 +30,7 @@ import { loggerModuleFactory } from 'src/engine/core-modules/logger/logger.modul
 import { MessageQueueModule } from 'src/engine/core-modules/message-queue/message-queue.module';
 import { messageQueueModuleFactory } from 'src/engine/core-modules/message-queue/message-queue.module-factory';
 import { TimelineMessagingModule } from 'src/engine/core-modules/messaging/timeline-messaging.module';
+import { TribTimelineModule } from 'src/modules/trib/trib-timeline.module';
 import { OpenApiModule } from 'src/engine/core-modules/open-api/open-api.module';
 import { PostgresCredentialsModule } from 'src/engine/core-modules/postgres-credentials/postgres-credentials.module';
 import { RedisClientModule } from 'src/engine/core-modules/redis-client/redis-client.module';
@@ -69,6 +70,7 @@ import { FileModule } from './file/file.module';
     AppTokenModule,
     TimelineMessagingModule,
     TimelineCalendarEventModule,
+    TribTimelineModule,
     UserModule,
     WorkspaceModule,
     WorkspaceInvitationModule,
@@ -123,6 +125,7 @@ import { FileModule } from './file/file.module';
     FeatureFlagModule,
     TimelineMessagingModule,
     TimelineCalendarEventModule,
+    TribTimelineModule,
     UserModule,
     WorkspaceModule,
     WorkspaceInvitationModule,

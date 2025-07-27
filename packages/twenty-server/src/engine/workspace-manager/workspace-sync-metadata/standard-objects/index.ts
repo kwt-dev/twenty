@@ -34,6 +34,13 @@ import { WorkflowRunWorkspaceEntity } from 'src/modules/workflow/common/standard
 import { WorkflowVersionWorkspaceEntity } from 'src/modules/workflow/common/standard-objects/workflow-version.workspace-entity';
 import { WorkflowWorkspaceEntity } from 'src/modules/workflow/common/standard-objects/workflow.workspace-entity';
 import { WorkspaceMemberWorkspaceEntity } from 'src/modules/workspace-member/standard-objects/workspace-member.workspace-entity';
+// TRIB entities with fixed SELECT field default values
+import { TribConsentWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-consent.workspace-entity';
+import { TribDeliveryWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-delivery.workspace-entity';
+import { TribMessageWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-message.workspace-entity';
+import { TribPhoneNumberWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-phone-number.workspace-entity';
+import { TribThreadWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-thread.workspace-entity';
+import { TribMessageParticipantWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-message-participant.workspace-entity';
 
 // TODO: Maybe we should automate this with the DiscoverService of Nest.JS
 export const standardObjectMetadataDefinitions = [
@@ -71,6 +78,13 @@ export const standardObjectMetadataDefinitions = [
   PersonWorkspaceEntity,
   TaskWorkspaceEntity,
   TaskTargetWorkspaceEntity,
+  // Enable core TRIB entities together to resolve interdependencies
+  TribConsentWorkspaceEntity,         // ✅ PHASE 3 - Fixed SELECT defaultValue issues
+  TribDeliveryWorkspaceEntity,        // ✅ PHASE 2 - Fixed SELECT defaultValue issues
+  TribPhoneNumberWorkspaceEntity, // ✅ PHASE 1 - Clean standalone entity
+  TribThreadWorkspaceEntity,      // ✅ FIRST - No dependencies
+  TribMessageWorkspaceEntity,     // ✅ SECOND - Depends on TribThread
+  TribMessageParticipantWorkspaceEntity, // ✅ BRIDGE - Links TribMessage to Person
   ApiKeyWorkspaceEntity,
   WebhookWorkspaceEntity,
 ];

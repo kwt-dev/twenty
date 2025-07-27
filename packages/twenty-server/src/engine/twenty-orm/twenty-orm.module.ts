@@ -42,6 +42,7 @@ import { PgPoolSharedModule } from './pg-shared-pool/pg-shared-pool.module';
     TwentyORMGlobalManager,
   ],
   exports: [
+    ...entitySchemaFactories,
     EntitySchemaFactory,
     TwentyORMManager,
     TwentyORMGlobalManager,

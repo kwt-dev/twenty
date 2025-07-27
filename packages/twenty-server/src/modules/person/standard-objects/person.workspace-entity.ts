@@ -40,6 +40,7 @@ import { NoteTargetWorkspaceEntity } from 'src/modules/note/standard-objects/not
 import { OpportunityWorkspaceEntity } from 'src/modules/opportunity/standard-objects/opportunity.workspace-entity';
 import { TaskTargetWorkspaceEntity } from 'src/modules/task/standard-objects/task-target.workspace-entity';
 import { TimelineActivityWorkspaceEntity } from 'src/modules/timeline/standard-objects/timeline-activity.workspace-entity';
+import { TribMessageParticipantWorkspaceEntity } from 'src/modules/trib/standard-objects/trib-message-participant.workspace-entity';
 
 const NAME_FIELD_NAME = 'name';
 const EMAILS_FIELD_NAME = 'emails';
@@ -262,6 +263,19 @@ export class PersonWorkspaceEntity extends BaseWorkspaceEntity {
   })
   @WorkspaceIsSystem()
   messageParticipants: Relation<MessageParticipantWorkspaceEntity[]>;
+
+  @WorkspaceRelation({
+    standardId: PERSON_STANDARD_FIELD_IDS.tribMessageParticipants,
+    type: RelationType.ONE_TO_MANY,
+    label: msg`SMS Participants`,
+    description: msg`SMS message participants for this person`,
+    icon: 'IconMessage',
+    inverseSideTarget: () => TribMessageParticipantWorkspaceEntity,
+    inverseSideFieldKey: 'person',
+    onDelete: RelationOnDeleteAction.SET_NULL,
+  })
+  @WorkspaceIsSystem()
+  tribMessageParticipants: Relation<TribMessageParticipantWorkspaceEntity[]>;
 
   @WorkspaceRelation({
     standardId: PERSON_STANDARD_FIELD_IDS.calendarEventParticipants,
