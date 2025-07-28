@@ -6,6 +6,9 @@ import { ITribMessageRepository } from '../interfaces/trib-message.repository.in
 import { ITribDeliveryRepository } from '../interfaces/trib-delivery.repository.interface';
 import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
 
+// Constants for object metadata retrieval
+const TRIB_MESSAGE_STANDARD_ID = '20202020-1a2b-4c3d-8e9f-123456789abc';
+
 /**
  * SMS Status Updater Service
  *
@@ -64,10 +67,36 @@ export class SmsStatusUpdaterService {
      */
     @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
     private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
+
+    /**
+     * ObjectMetadataRepository for event metadata retrieval
+     * Required for proper event structure with objectMetadata field
+     */
+    @Inject(TRIB_TOKENS.OBJECT_METADATA_REPOSITORY)
+    private readonly objectMetadataRepository: any,
   ) {
     this.logger.log(
       'SMS Status Updater Service initialized with DI repositories and event emitter',
     );
+  }
+
+  /**
+   * Retrieve object metadata for TribMessage entity
+   * Required for proper event structure with objectMetadata field
+   */
+  private async getObjectMetadata(workspaceId: string): Promise<any> {
+    const objectMetadata = await this.objectMetadataRepository.findOne({
+      where: {
+        standardId: TRIB_MESSAGE_STANDARD_ID,
+        workspaceId: workspaceId,
+      },
+    });
+
+    if (!objectMetadata) {
+      throw new Error('TribMessage object metadata not found');
+    }
+
+    return objectMetadata;
   }
 
   /**
@@ -130,6 +159,9 @@ export class SmsStatusUpdaterService {
       // Get the updated message for event emission
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
+        // Get object metadata for proper event structure
+        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        
         // Emit database event for real-time frontend updates
         this.workspaceEventEmitter.emitDatabaseBatchEvent({
           objectMetadataNameSingular: 'tribMessage',
@@ -137,6 +169,7 @@ export class SmsStatusUpdaterService {
           events: [
             {
               recordId: messageId,
+              objectMetadata,
               properties: {
                 after: updatedMessage,
               },
@@ -220,6 +253,9 @@ export class SmsStatusUpdaterService {
       // Get the updated message for event emission
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
+        // Get object metadata for proper event structure
+        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        
         // Emit database event for real-time frontend updates
         this.workspaceEventEmitter.emitDatabaseBatchEvent({
           objectMetadataNameSingular: 'tribMessage',
@@ -227,6 +263,7 @@ export class SmsStatusUpdaterService {
           events: [
             {
               recordId: messageId,
+              objectMetadata,
               properties: {
                 after: updatedMessage,
               },
@@ -316,6 +353,9 @@ export class SmsStatusUpdaterService {
       // Get the updated message for event emission
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
+        // Get object metadata for proper event structure
+        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        
         // Emit database event for real-time frontend updates
         this.workspaceEventEmitter.emitDatabaseBatchEvent({
           objectMetadataNameSingular: 'tribMessage',
@@ -323,6 +363,7 @@ export class SmsStatusUpdaterService {
           events: [
             {
               recordId: messageId,
+              objectMetadata,
               properties: {
                 after: updatedMessage,
               },

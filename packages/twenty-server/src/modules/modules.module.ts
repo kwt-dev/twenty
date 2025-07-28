@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { CalendarModule } from 'src/modules/calendar/calendar.module';
 import { ConnectedAccountModule } from 'src/modules/connected-account/connected-account.module';
@@ -12,9 +13,11 @@ import { TribMessagesModule, TRIB_TOKENS } from '@twenty/trib-messages-module';
 import { RedisClientService } from 'src/engine/core-modules/redis-client/redis-client.service';
 import { getQueueToken } from 'src/engine/core-modules/message-queue/utils/get-queue-token.util';
 import { MessageQueue } from 'src/engine/core-modules/message-queue/message-queue.constants';
+import { ObjectMetadataEntity } from 'src/engine/metadata-modules/object-metadata/object-metadata.entity';
 import { TribMessageWorkspaceRepository } from 'src/modules/trib/repositories/trib-message-workspace.repository';
 import { TribWorkspaceService } from 'src/modules/trib/services/trib-workspace.service';
 import { SmsQueueJob } from 'src/modules/trib/jobs/sms-queue.job';
+import { WorkspaceEventEmitter } from 'src/engine/workspace-event-emitter/workspace-event-emitter';
 
 @Module({
   imports: [
@@ -39,6 +42,17 @@ import { SmsQueueJob } from 'src/modules/trib/jobs/sms-queue.job';
       {
         provide: TRIB_TOKENS.PERSON_REPOSITORY,
         useClass: TribWorkspaceService,
+      },
+      // Connect Twenty's WorkspaceEventEmitter for real-time events
+      {
+        provide: TRIB_TOKENS.WORKSPACE_EVENT_EMITTER,
+        useExisting: WorkspaceEventEmitter,
+      },
+      // Connect Twenty's ObjectMetadataRepository for event metadata
+      {
+        provide: TRIB_TOKENS.OBJECT_METADATA_REPOSITORY,
+        useFactory: (repo) => repo,
+        inject: [getRepositoryToken(ObjectMetadataEntity, 'core')],
       },
     ]),
     CalendarModule,

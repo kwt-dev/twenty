@@ -33,6 +33,7 @@ export interface IWorkspaceEventEmitter {
     action: DatabaseEventAction;
     events: Array<{
       recordId: string;
+      objectMetadata: any;
       properties: {
         after: T;
       };

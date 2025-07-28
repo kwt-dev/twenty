@@ -43,6 +43,9 @@ import { SmsQueueJobData, SMS_QUEUE_JOBS } from '../types/queue-job-types';
 import { TRIB_TOKENS } from '../tokens';
 import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
 
+// Constants for object metadata retrieval
+const TRIB_MESSAGE_STANDARD_ID = '20202020-1a2b-4c3d-8e9f-123456789abc';
+
 /**
  * Simple assert function for parameter validation
  */
@@ -210,6 +213,13 @@ export class TribSmsService {
      */
     @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
     private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
+
+    /**
+     * ObjectMetadataRepository for event metadata retrieval
+     * Required for proper event structure with objectMetadata field
+     */
+    @Inject(TRIB_TOKENS.OBJECT_METADATA_REPOSITORY)
+    private readonly objectMetadataRepository: any,
   ) {
     this.logger.log(
       'TribSmsService initialized with Twenty CRM phone matching capability',
@@ -221,6 +231,25 @@ export class TribSmsService {
    */
   public initializeService(): void {
     this.logger.log('TribSmsService configuration initialized');
+  }
+
+  /**
+   * Retrieve object metadata for TribMessage entity
+   * Required for proper event structure with objectMetadata field
+   */
+  private async getObjectMetadata(workspaceId: string): Promise<any> {
+    const objectMetadata = await this.objectMetadataRepository.findOne({
+      where: {
+        standardId: TRIB_MESSAGE_STANDARD_ID,
+        workspaceId: workspaceId,
+      },
+    });
+
+    if (!objectMetadata) {
+      throw new Error('TribMessage object metadata not found');
+    }
+
+    return objectMetadata;
   }
 
   /**
@@ -353,6 +382,9 @@ export class TribSmsService {
       this.logger.log(`Message queued with ID: ${savedMessage.id}`);
       transactionResult.messageId = savedMessage.id;
 
+      // Get object metadata for proper event structure
+      const objectMetadata = await this.getObjectMetadata(messageData.workspaceId);
+      
       // Emit database event for real-time frontend updates
       this.workspaceEventEmitter.emitDatabaseBatchEvent({
         objectMetadataNameSingular: 'tribMessage',
@@ -360,6 +392,7 @@ export class TribSmsService {
         events: [
           {
             recordId: savedMessage.id,
+            objectMetadata,
             properties: {
               after: savedMessage,
             },
@@ -661,6 +694,9 @@ export class TribSmsService {
         retryCount: 0,
       });
 
+      // Get object metadata for proper event structure
+      const objectMetadata = await this.getObjectMetadata(workspaceId);
+
       // Emit database event for real-time frontend updates
       this.workspaceEventEmitter.emitDatabaseBatchEvent({
         objectMetadataNameSingular: 'tribMessage',
@@ -668,6 +704,7 @@ export class TribSmsService {
         events: [
           {
             recordId: inboundMessage.id,
+            objectMetadata,
             properties: {
               after: inboundMessage,
             },

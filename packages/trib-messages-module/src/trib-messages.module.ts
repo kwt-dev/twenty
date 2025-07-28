@@ -1,5 +1,6 @@
 import { Module, DynamicModule, Provider, Logger } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { TwilioApiClientService } from './services/twilio-api-client.service';
 import { TribSmsService } from './services/trib_sms.service';
 import { SmsStatusUpdaterService } from './services/sms-status-updater.service';
