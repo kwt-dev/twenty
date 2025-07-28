@@ -5,6 +5,7 @@ import { ActivityList } from '@/activities/components/ActivityList';
 import { CustomResolverFetchMoreLoader } from '@/activities/components/CustomResolverFetchMoreLoader';
 import { SkeletonLoader } from '@/activities/components/SkeletonLoader';
 import { TribSmsMessagePreview } from '@/activities/tribSms/components/TribSmsMessagePreview';
+import { TribMessageRealtimeEffect } from '@/activities/tribSms/components/TribMessageRealtimeEffect';
 import { TRIB_SMS_MESSAGES_DEFAULT_PAGE_SIZE } from '@/activities/tribSms/constants/TribSmsMessaging';
 import { getTribSmsMessagesFromPersonId } from '@/activities/tribSms/graphql/queries/getTribSmsMessagesFromPersonId';
 import { SEND_TRIB_SMS_MESSAGE } from '@/activities/tribSms/graphql/mutations/sendTribSmsMessage';
@@ -198,6 +199,10 @@ export const TribMessageThreads = ({
 
   return (
     <StyledContainer>
+      {/* Real-time subscription for message updates */}
+      {targetableObject.targetObjectNameSingular === CoreObjectNameSingular.Person && (
+        <TribMessageRealtimeEffect personId={targetableObject.id} />
+      )}
       <Section>
         {/* ✅ CORRECT: Use Twenty's H1Title with count like EmailThreads */}
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

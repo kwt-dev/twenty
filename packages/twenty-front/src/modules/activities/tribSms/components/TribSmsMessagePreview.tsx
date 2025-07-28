@@ -15,6 +15,9 @@ const StyledMessageList = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(1)};
+  max-height: 400px;
+  overflow-y: auto;
+  padding: ${({ theme }) => theme.spacing(1)};
 `;
 
 const StyledMessage = styled.div<{ isOutbound: boolean }>`
@@ -28,10 +31,28 @@ const StyledMessage = styled.div<{ isOutbound: boolean }>`
   align-self: ${({ isOutbound }) => isOutbound ? 'flex-end' : 'flex-start'};
 `;
 
-const StyledMessageMeta = styled.div`
+const StyledMessageMeta = styled.div<{ isOutbound?: boolean; status?: string }>`
   font-size: ${({ theme }) => theme.font.size.xs};
-  color: ${({ theme }) => theme.font.color.tertiary};
+  color: ${({ theme, isOutbound }) => 
+    isOutbound ? theme.color.gray50 : theme.font.color.tertiary};
   margin-top: ${({ theme }) => theme.spacing(1)};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const StyledDeliveryStatus = styled.span<{ status: string }>`
+  font-size: ${({ theme }) => theme.font.size.xs};
+  color: ${({ theme, status }) => {
+    switch (status.toLowerCase()) {
+      case 'delivered': return theme.color.green;
+      case 'sent': return theme.color.blue;
+      case 'failed': return theme.color.red;
+      case 'pending': return theme.color.orange;
+      default: return theme.font.color.tertiary;
+    }
+  }};
+  font-weight: ${({ theme }) => theme.font.weight.medium};
 `;
 
 type TribSmsMessagePreviewProps = {
@@ -59,22 +80,23 @@ export const TribSmsMessagePreview = ({
     <StyledMessagePreview>
       <H1Title fontColor={H1TitleFontColor.Primary} title={messageThread.phoneNumber} />
       <StyledMessageList>
-        {sortedMessages.slice(0, 3).map((message) => (
+        {sortedMessages.map((message) => (
           <StyledMessage
             key={message.id}
             isOutbound={message.direction === 'OUTBOUND'}
           >
             <div>{message.content}</div>
-            <StyledMessageMeta>
-              {new Date(message.timestamp).toLocaleString()} • {message.status}
+            <StyledMessageMeta 
+              isOutbound={message.direction === 'OUTBOUND'}
+              status={message.status}
+            >
+              <span>{new Date(message.timestamp).toLocaleString()}</span>
+              <StyledDeliveryStatus status={message.status}>
+                {message.status}
+              </StyledDeliveryStatus>
             </StyledMessageMeta>
           </StyledMessage>
         ))}
-        {sortedMessages.length > 3 && (
-          <StyledMessageMeta>
-            +{sortedMessages.length - 3} more messages
-          </StyledMessageMeta>
-        )}
       </StyledMessageList>
     </StyledMessagePreview>
   );

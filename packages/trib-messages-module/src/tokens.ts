@@ -30,6 +30,9 @@ export const TRIB_MESSAGE_PARTICIPANT_REPOSITORY = Symbol(
   'TRIB_MESSAGE_PARTICIPANT_REPOSITORY',
 );
 
+// Twenty server integration tokens
+export const TRIB_WORKSPACE_EVENT_EMITTER = Symbol('TRIB_WORKSPACE_EVENT_EMITTER');
+
 /**
  * Centralized token definitions to prevent string literal drift
  * and ensure consistency across the module.
@@ -47,6 +50,8 @@ export const TRIB_TOKENS = {
   PHONE_NUMBER_REPOSITORY: TRIB_PHONE_NUMBER_REPOSITORY,
   PERSON_REPOSITORY: TRIB_PERSON_REPOSITORY,
   MESSAGE_PARTICIPANT_REPOSITORY: TRIB_MESSAGE_PARTICIPANT_REPOSITORY,
+  // Twenty server integration tokens
+  WORKSPACE_EVENT_EMITTER: TRIB_WORKSPACE_EVENT_EMITTER,
 } as const;
 
 /**

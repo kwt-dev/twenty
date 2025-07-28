@@ -4,6 +4,7 @@ import { TribMessageStatus } from '../types/message-enums';
 import { TribDeliveryStatus } from '../types/delivery-enums';
 import { ITribMessageRepository } from '../interfaces/trib-message.repository.interface';
 import { ITribDeliveryRepository } from '../interfaces/trib-delivery.repository.interface';
+import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
 
 /**
  * SMS Status Updater Service
@@ -56,9 +57,16 @@ export class SmsStatusUpdaterService {
 
     @Inject(TRIB_TOKENS.DELIVERY_REPOSITORY)
     private readonly deliveryRepository: ITribDeliveryRepository,
+
+    /**
+     * Workspace event emitter for real-time updates
+     * Enables frontend subscriptions to receive status change events
+     */
+    @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
+    private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
   ) {
     this.logger.log(
-      'SMS Status Updater Service initialized with DI repositories',
+      'SMS Status Updater Service initialized with DI repositories and event emitter',
     );
   }
 
@@ -118,6 +126,25 @@ export class SmsStatusUpdaterService {
 
       // Update or create delivery record
       await this.updateDeliveryStatus(messageId, status);
+
+      // Get the updated message for event emission
+      const updatedMessage = await messageRepository.findById(messageId);
+      if (updatedMessage) {
+        // Emit database event for real-time frontend updates
+        this.workspaceEventEmitter.emitDatabaseBatchEvent({
+          objectMetadataNameSingular: 'tribMessage',
+          action: DatabaseEventAction.UPDATED,
+          events: [
+            {
+              recordId: messageId,
+              properties: {
+                after: updatedMessage,
+              },
+            },
+          ],
+          workspaceId: workspaceId,
+        });
+      }
 
       this.logger.log(`Message ${messageId} status updated to ${status}`);
     } catch (error) {
@@ -189,6 +216,25 @@ export class SmsStatusUpdaterService {
         status,
         externalId,
       );
+
+      // Get the updated message for event emission
+      const updatedMessage = await messageRepository.findById(messageId);
+      if (updatedMessage) {
+        // Emit database event for real-time frontend updates
+        this.workspaceEventEmitter.emitDatabaseBatchEvent({
+          objectMetadataNameSingular: 'tribMessage',
+          action: DatabaseEventAction.UPDATED,
+          events: [
+            {
+              recordId: messageId,
+              properties: {
+                after: updatedMessage,
+              },
+            },
+          ],
+          workspaceId: workspaceId,
+        });
+      }
 
       this.logger.log(
         `Message ${messageId} updated with status ${status} and external ID ${externalId}`,
@@ -266,6 +312,25 @@ export class SmsStatusUpdaterService {
         errorCode,
         errorMessage,
       );
+
+      // Get the updated message for event emission
+      const updatedMessage = await messageRepository.findById(messageId);
+      if (updatedMessage) {
+        // Emit database event for real-time frontend updates
+        this.workspaceEventEmitter.emitDatabaseBatchEvent({
+          objectMetadataNameSingular: 'tribMessage',
+          action: DatabaseEventAction.UPDATED,
+          events: [
+            {
+              recordId: messageId,
+              properties: {
+                after: updatedMessage,
+              },
+            },
+          ],
+          workspaceId: workspaceId,
+        });
+      }
 
       this.logger.log(
         `Message ${messageId} updated with error status ${status}: ${errorCode}`,

@@ -41,6 +41,7 @@ interface MessageQueueService {
 
 import { SmsQueueJobData, SMS_QUEUE_JOBS } from '../types/queue-job-types';
 import { TRIB_TOKENS } from '../tokens';
+import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
 
 /**
  * Simple assert function for parameter validation
@@ -202,6 +203,13 @@ export class TribSmsService {
      */
     @Inject(TRIB_TOKENS.PERSON_REPOSITORY)
     private readonly personRepository: IPersonRepository,
+
+    /**
+     * Workspace event emitter for real-time updates
+     * Enables frontend subscriptions to receive message events
+     */
+    @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
+    private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
   ) {
     this.logger.log(
       'TribSmsService initialized with Twenty CRM phone matching capability',
@@ -344,6 +352,39 @@ export class TribSmsService {
 
       this.logger.log(`Message queued with ID: ${savedMessage.id}`);
       transactionResult.messageId = savedMessage.id;
+
+      // Emit database event for real-time frontend updates
+      this.workspaceEventEmitter.emitDatabaseBatchEvent({
+        objectMetadataNameSingular: 'tribMessage',
+        action: DatabaseEventAction.CREATED,
+        events: [
+          {
+            recordId: savedMessage.id,
+            properties: {
+              after: savedMessage,
+            },
+          },
+        ],
+        workspaceId: messageData.workspaceId,
+      });
+
+      // Create TribMessageParticipant for frontend queries if person is linked
+      if (messageData.contactId && typeof this.personRepository === 'object' && 'createMessageParticipant' in this.personRepository) {
+        try {
+          await (this.personRepository as any).createMessageParticipant({
+            messageId: savedMessage.id,
+            personId: messageData.contactId,
+            role: 'to', // Person is receiving the outbound message
+            phoneNumber: messageData.to,
+          });
+          this.logger.log(`Participant created for message ${savedMessage.id} and person ${messageData.contactId}`);
+        } catch (participantError) {
+          // Log error but don't fail message creation
+          this.logger.error(
+            `Failed to create participant for message ${savedMessage.id}: ${participantError instanceof Error ? participantError.message : String(participantError)}`,
+          );
+        }
+      }
     } catch (error) {
       this.logger.error('Message creation failed', error);
       const errorMessage =
@@ -618,6 +659,21 @@ export class TribSmsService {
         contactId: contactId, // ✨ NEW: Link to Twenty CRM Person if found
         timestamp: new Date(),
         retryCount: 0,
+      });
+
+      // Emit database event for real-time frontend updates
+      this.workspaceEventEmitter.emitDatabaseBatchEvent({
+        objectMetadataNameSingular: 'tribMessage',
+        action: DatabaseEventAction.CREATED,
+        events: [
+          {
+            recordId: inboundMessage.id,
+            properties: {
+              after: inboundMessage,
+            },
+          },
+        ],
+        workspaceId: workspaceId,
       });
 
       // Security audit log for message creation

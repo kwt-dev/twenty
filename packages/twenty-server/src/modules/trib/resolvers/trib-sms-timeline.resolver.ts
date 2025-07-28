@@ -181,6 +181,7 @@ export class TribSmsTimelineResolver {
         workspaceId: workspaceId,
         direction: TribMessageDirection.OUTBOUND,
         priority: TribMessagePriority.NORMAL,
+        contactId: personId, // Add personId for participant linking
       };
 
       // Step 3: Build TwilioConfigDto from environment

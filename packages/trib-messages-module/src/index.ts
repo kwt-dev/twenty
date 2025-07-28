@@ -172,6 +172,11 @@ export type {
   IPersonRepository,
   PersonPhone,
 } from './interfaces/person.repository.interface';
+export type {
+  ITribMessageParticipantRepository,
+  TribMessageParticipant,
+  CreateTribMessageParticipantData,
+} from './interfaces/trib-message-participant.repository.interface';
 
 // Export module
 export { TribMessagesModule } from './trib-messages.module';
