@@ -48,7 +48,7 @@ COPY --from=twenty-front-build /app/packages/twenty-front/scripts/inject-runtime
 RUN chmod +x /usr/local/bin/inject-runtime-env.sh
 
 # Copy nginx template
-COPY ../gateway/docker/twenty/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY ./nginx.conf.template /etc/nginx/templates/default.conf.template
 
 # Set default environment variables for nginx template
 ENV BACKEND_HOST=tintmeta-twenty-backend
