@@ -8,8 +8,8 @@ on:
       - 'packages/twenty-ui/**'
       - 'packages/twenty-shared/**'
       - '.github/workflows/twenty-frontend-deploy.yml'
-      - '../gateway/docker/twenty/Dockerfile.frontend'
-      - '../gateway/docker/twenty/nginx.conf.template'
+      - '../../tm-twenty/Dockerfile.frontend'
+      - '../../tm-twenty/nginx.conf.template'
   workflow_dispatch:
 
 env:
@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ../gateway/docker/twenty/Dockerfile.frontend
+          file: ../../tm-twenty/Dockerfile.frontend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
