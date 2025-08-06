@@ -9,7 +9,7 @@ on:
       - 'packages/twenty-shared/**'
       - 'packages/trib-messages-module/**'
       - '.github/workflows/twenty-backend-deploy.yml'
-      - '../../tm-twenty/Dockerfile.backend'
+      - 'tm-twenty/Dockerfile.backend'
   workflow_dispatch:
 
 env:
@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ../../tm-twenty/Dockerfile.backend
+          file: tm-twenty/Dockerfile.backend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
