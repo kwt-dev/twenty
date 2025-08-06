@@ -9,7 +9,7 @@ on:
       - 'packages/twenty-shared/**'
       - '.github/workflows/twenty-frontend-deploy.yml'
       - 'tm-twenty/Dockerfile.frontend'
-      - 'tm-twentynginx.conf.template'
+      - 'tm-twenty/nginx.conf.template'
   workflow_dispatch:
 
 env:
