@@ -5,9 +5,8 @@ import { TribDeliveryStatus } from '../types/delivery-enums';
 import { ITribMessageRepository } from '../interfaces/trib-message.repository.interface';
 import { ITribDeliveryRepository } from '../interfaces/trib-delivery.repository.interface';
 import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
+import { getTribMessageMetadata } from '../constants/trib-message-metadata-stub';
 
-// Constants for object metadata retrieval
-const TRIB_MESSAGE_STANDARD_ID = '20202020-1a2b-4c3d-8e9f-123456789abc';
 
 /**
  * SMS Status Updater Service
@@ -68,36 +67,12 @@ export class SmsStatusUpdaterService {
     @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
     private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
 
-    /**
-     * ObjectMetadataRepository for event metadata retrieval
-     * Required for proper event structure with objectMetadata field
-     */
-    @Inject(TRIB_TOKENS.OBJECT_METADATA_REPOSITORY)
-    private readonly objectMetadataRepository: any,
   ) {
     this.logger.log(
       'SMS Status Updater Service initialized with DI repositories and event emitter',
     );
   }
 
-  /**
-   * Retrieve object metadata for TribMessage entity
-   * Required for proper event structure with objectMetadata field
-   */
-  private async getObjectMetadata(workspaceId: string): Promise<any> {
-    const objectMetadata = await this.objectMetadataRepository.findOne({
-      where: {
-        standardId: TRIB_MESSAGE_STANDARD_ID,
-        workspaceId: workspaceId,
-      },
-    });
-
-    if (!objectMetadata) {
-      throw new Error('TribMessage object metadata not found');
-    }
-
-    return objectMetadata;
-  }
 
   /**
    * Update message status with basic status change
@@ -160,23 +135,30 @@ export class SmsStatusUpdaterService {
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
         // Get object metadata for proper event structure
-        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        const objectMetadata = getTribMessageMetadata(workspaceId);
         
+        this.logger.debug(`Emitting event for message ${messageId}: threadId=${updatedMessage.threadId}, status=${updatedMessage.status}`);
+        
+        // TODO: Temporarily disable event emission to test root cause diagnosis
         // Emit database event for real-time frontend updates
-        this.workspaceEventEmitter.emitDatabaseBatchEvent({
-          objectMetadataNameSingular: 'tribMessage',
-          action: DatabaseEventAction.UPDATED,
-          events: [
-            {
-              recordId: messageId,
-              objectMetadata,
-              properties: {
-                after: updatedMessage,
-              },
-            },
-          ],
-          workspaceId: workspaceId,
-        });
+        // try {
+        //   this.workspaceEventEmitter.emitDatabaseBatchEvent({
+        //     objectMetadataNameSingular: 'tribMessage',
+        //     action: DatabaseEventAction.UPDATED,
+        //     events: [
+        //       {
+        //         recordId: messageId,
+        //         objectMetadata,
+        //         properties: {
+        //           after: updatedMessage,
+        //         },
+        //       },
+        //     ],
+        //     workspaceId: workspaceId,
+        //   });
+        // } catch (error) {
+        //   this.logger.error(`Failed to emit database event for message ${messageId}: ${error instanceof Error ? error.message : String(error)}`);
+        // }
       }
 
       this.logger.log(`Message ${messageId} status updated to ${status}`);
@@ -254,23 +236,30 @@ export class SmsStatusUpdaterService {
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
         // Get object metadata for proper event structure
-        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        const objectMetadata = getTribMessageMetadata(workspaceId);
         
+        this.logger.debug(`Emitting event for message ${messageId}: threadId=${updatedMessage.threadId}, status=${updatedMessage.status}`);
+        
+        // TODO: Temporarily disable event emission to test root cause diagnosis
         // Emit database event for real-time frontend updates
-        this.workspaceEventEmitter.emitDatabaseBatchEvent({
-          objectMetadataNameSingular: 'tribMessage',
-          action: DatabaseEventAction.UPDATED,
-          events: [
-            {
-              recordId: messageId,
-              objectMetadata,
-              properties: {
-                after: updatedMessage,
-              },
-            },
-          ],
-          workspaceId: workspaceId,
-        });
+        // try {
+        //   this.workspaceEventEmitter.emitDatabaseBatchEvent({
+        //     objectMetadataNameSingular: 'tribMessage',
+        //     action: DatabaseEventAction.UPDATED,
+        //     events: [
+        //       {
+        //         recordId: messageId,
+        //         objectMetadata,
+        //         properties: {
+        //           after: updatedMessage,
+        //         },
+        //       },
+        //     ],
+        //     workspaceId: workspaceId,
+        //   });
+        // } catch (error) {
+        //   this.logger.error(`Failed to emit database event for message ${messageId}: ${error instanceof Error ? error.message : String(error)}`);
+        // }
       }
 
       this.logger.log(
@@ -354,23 +343,30 @@ export class SmsStatusUpdaterService {
       const updatedMessage = await messageRepository.findById(messageId);
       if (updatedMessage) {
         // Get object metadata for proper event structure
-        const objectMetadata = await this.getObjectMetadata(workspaceId);
+        const objectMetadata = getTribMessageMetadata(workspaceId);
         
+        this.logger.debug(`Emitting event for message ${messageId}: threadId=${updatedMessage.threadId}, status=${updatedMessage.status}`);
+        
+        // TODO: Temporarily disable event emission to test root cause diagnosis
         // Emit database event for real-time frontend updates
-        this.workspaceEventEmitter.emitDatabaseBatchEvent({
-          objectMetadataNameSingular: 'tribMessage',
-          action: DatabaseEventAction.UPDATED,
-          events: [
-            {
-              recordId: messageId,
-              objectMetadata,
-              properties: {
-                after: updatedMessage,
-              },
-            },
-          ],
-          workspaceId: workspaceId,
-        });
+        // try {
+        //   this.workspaceEventEmitter.emitDatabaseBatchEvent({
+        //     objectMetadataNameSingular: 'tribMessage',
+        //     action: DatabaseEventAction.UPDATED,
+        //     events: [
+        //       {
+        //         recordId: messageId,
+        //         objectMetadata,
+        //         properties: {
+        //           after: updatedMessage,
+        //         },
+        //       },
+        //     ],
+        //     workspaceId: workspaceId,
+        //   });
+        // } catch (error) {
+        //   this.logger.error(`Failed to emit database event for message ${messageId}: ${error instanceof Error ? error.message : String(error)}`);
+        // }
       }
 
       this.logger.log(

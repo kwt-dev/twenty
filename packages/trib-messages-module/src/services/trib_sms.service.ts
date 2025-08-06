@@ -42,9 +42,8 @@ interface MessageQueueService {
 import { SmsQueueJobData, SMS_QUEUE_JOBS } from '../types/queue-job-types';
 import { TRIB_TOKENS } from '../tokens';
 import { IWorkspaceEventEmitter, DatabaseEventAction } from '../interfaces/twenty-integration.interface';
+import { getTribMessageMetadata } from '../constants/trib-message-metadata-stub';
 
-// Constants for object metadata retrieval
-const TRIB_MESSAGE_STANDARD_ID = '20202020-1a2b-4c3d-8e9f-123456789abc';
 
 /**
  * Simple assert function for parameter validation
@@ -214,12 +213,6 @@ export class TribSmsService {
     @Inject(TRIB_TOKENS.WORKSPACE_EVENT_EMITTER)
     private readonly workspaceEventEmitter: IWorkspaceEventEmitter,
 
-    /**
-     * ObjectMetadataRepository for event metadata retrieval
-     * Required for proper event structure with objectMetadata field
-     */
-    @Inject(TRIB_TOKENS.OBJECT_METADATA_REPOSITORY)
-    private readonly objectMetadataRepository: any,
   ) {
     this.logger.log(
       'TribSmsService initialized with Twenty CRM phone matching capability',
@@ -233,24 +226,6 @@ export class TribSmsService {
     this.logger.log('TribSmsService configuration initialized');
   }
 
-  /**
-   * Retrieve object metadata for TribMessage entity
-   * Required for proper event structure with objectMetadata field
-   */
-  private async getObjectMetadata(workspaceId: string): Promise<any> {
-    const objectMetadata = await this.objectMetadataRepository.findOne({
-      where: {
-        standardId: TRIB_MESSAGE_STANDARD_ID,
-        workspaceId: workspaceId,
-      },
-    });
-
-    if (!objectMetadata) {
-      throw new Error('TribMessage object metadata not found');
-    }
-
-    return objectMetadata;
-  }
 
   /**
    * Send SMS message with fast transaction and async processing
@@ -383,23 +358,30 @@ export class TribSmsService {
       transactionResult.messageId = savedMessage.id;
 
       // Get object metadata for proper event structure
-      const objectMetadata = await this.getObjectMetadata(messageData.workspaceId);
+      const objectMetadata = getTribMessageMetadata(messageData.workspaceId);
+      
+      this.logger.debug(`Emitting CREATED event for message ${savedMessage.id}: threadId=${savedMessage.threadId}, status=${savedMessage.status}`);
       
       // Emit database event for real-time frontend updates
-      this.workspaceEventEmitter.emitDatabaseBatchEvent({
-        objectMetadataNameSingular: 'tribMessage',
-        action: DatabaseEventAction.CREATED,
-        events: [
-          {
-            recordId: savedMessage.id,
-            objectMetadata,
-            properties: {
-              after: savedMessage,
+      try {
+        this.workspaceEventEmitter.emitDatabaseBatchEvent({
+          objectMetadataNameSingular: 'tribMessage',
+          action: DatabaseEventAction.CREATED,
+          events: [
+            {
+              recordId: savedMessage.id,
+              objectMetadata,
+              properties: {
+                after: savedMessage,
+              },
             },
-          },
-        ],
-        workspaceId: messageData.workspaceId,
-      });
+          ],
+          workspaceId: messageData.workspaceId,
+        });
+        this.logger.log(`✅ Database event emitted for message ${savedMessage.id}`);
+      } catch (error) {
+        this.logger.error(`Failed to emit database event for message ${savedMessage.id}: ${error instanceof Error ? error.message : String(error)}`);
+      }
 
       // Create TribMessageParticipant for frontend queries if person is linked
       if (messageData.contactId && typeof this.personRepository === 'object' && 'createMessageParticipant' in this.personRepository) {
@@ -695,23 +677,30 @@ export class TribSmsService {
       });
 
       // Get object metadata for proper event structure
-      const objectMetadata = await this.getObjectMetadata(workspaceId);
+      const objectMetadata = getTribMessageMetadata(workspaceId);
+
+      this.logger.debug(`Emitting CREATED event for inbound message ${inboundMessage.id}: threadId=${inboundMessage.threadId}, status=${inboundMessage.status}`);
 
       // Emit database event for real-time frontend updates
-      this.workspaceEventEmitter.emitDatabaseBatchEvent({
-        objectMetadataNameSingular: 'tribMessage',
-        action: DatabaseEventAction.CREATED,
-        events: [
-          {
-            recordId: inboundMessage.id,
-            objectMetadata,
-            properties: {
-              after: inboundMessage,
+      try {
+        this.workspaceEventEmitter.emitDatabaseBatchEvent({
+          objectMetadataNameSingular: 'tribMessage',
+          action: DatabaseEventAction.CREATED,
+          events: [
+            {
+              recordId: inboundMessage.id,
+              objectMetadata,
+              properties: {
+                after: inboundMessage,
+              },
             },
-          },
-        ],
-        workspaceId: workspaceId,
-      });
+          ],
+          workspaceId: workspaceId,
+        });
+        this.logger.log(`✅ Database event emitted for inbound message ${inboundMessage.id}`);
+      } catch (error) {
+        this.logger.error(`Failed to emit database event for inbound message ${inboundMessage.id}: ${error instanceof Error ? error.message : String(error)}`);
+      }
 
       // Security audit log for message creation
       this.securityLogger.log(

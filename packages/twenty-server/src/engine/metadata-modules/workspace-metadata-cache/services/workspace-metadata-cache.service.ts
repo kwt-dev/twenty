@@ -125,6 +125,46 @@ export class WorkspaceMetadataCacheService {
       objectMetadataItemsWithIndexMetadatas,
     );
 
+    // === TRIB MESSAGE METADATA DIAGNOSTIC - Phase 7A ===
+    this.logger.log('=== TRIB MESSAGE METADATA DIAGNOSTIC START ===');
+    
+    // Check if TribMessage exists in metadata maps
+    const tribMessageId = freshObjectMetadataMaps.idByNameSingular['tribMessage'];
+    if (tribMessageId) {
+      const tribMessageMetadata = freshObjectMetadataMaps.byId[tribMessageId];
+      this.logger.log(`✅ TribMessage found with ID: ${tribMessageId}`);
+      this.logger.log(`TribMessage nameSingular: ${tribMessageMetadata.nameSingular}`);
+      this.logger.log(`TribMessage fields count: ${Object.keys(tribMessageMetadata.fieldsById || {}).length}`);
+      
+      // Log all field names and IDs
+      if (tribMessageMetadata.fieldsById) {
+        this.logger.log('TribMessage fieldsById:');
+        Object.entries(tribMessageMetadata.fieldsById).forEach(([fieldId, field]) => {
+          this.logger.log(`  - ${field.name} (ID: ${fieldId}, type: ${field.type})`);
+        });
+        
+        this.logger.log('TribMessage fieldIdByName:');
+        Object.entries(tribMessageMetadata.fieldIdByName || {}).forEach(([fieldName, fieldId]) => {
+          this.logger.log(`  - ${fieldName} -> ${fieldId}`);
+        });
+      } else {
+        this.logger.error('❌ TribMessage fieldsById is missing or empty!');
+      }
+    } else {
+      this.logger.error('❌ TribMessage NOT found in metadata maps!');
+      this.logger.log('Available entities:', Object.keys(freshObjectMetadataMaps.idByNameSingular));
+    }
+    
+    // Compare with a working entity (Person) for reference
+    const personId = freshObjectMetadataMaps.idByNameSingular['person'];
+    if (personId) {
+      const personMetadata = freshObjectMetadataMaps.byId[personId];
+      this.logger.log(`✅ Person found with ${Object.keys(personMetadata.fieldsById || {}).length} fields (for comparison)`);
+    }
+    
+    this.logger.log('=== TRIB MESSAGE METADATA DIAGNOSTIC END ===');
+    // === END DIAGNOSTIC ===
+
     await this.workspaceCacheStorageService.setObjectMetadataMaps(
       workspaceId,
       currentDatabaseVersion,

@@ -141,6 +141,15 @@ export { TwilioResponseTransformerService } from './utils/twilio/response-transf
 export { RateLimitCalculatorService } from './utils/rate-limiting/rate-limit-calculator';
 export { RateLimitKeyGeneratorService } from './utils/rate-limiting/rate-limit-key-generator';
 
+// Export Twilio types
+export { 
+  TwilioMessageResponse, 
+  TwilioMessageStatus,
+  TwilioClient,
+  createTwilioClient,
+  validateTwilioConfig 
+} from './utils/twilio/twilio-client-factory';
+
 // Export phone utilities for SMS matching
 export { 
   normalizePhoneNumber, 

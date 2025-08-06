@@ -1,7 +1,7 @@
 import {
   TwilioMessageResponse,
   TwilioMessageStatus,
-} from '../utils/twilio/twilio-client-factory';
+} from '@twenty/trib-messages-module';
 
 /**
  * Standardized result interface for all Twilio API operations

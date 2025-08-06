@@ -6,7 +6,7 @@ interface MessageQueueJobData {
 import {
   CreateSmsMessageDto,
   TwilioConfigDto,
-} from '../dto/create-message.dto';
+} from '@twenty/trib-messages-module';
 
 /**
  * SMS queue job data interface for asynchronous SMS processing

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Not, IsNull } from 'typeorm';
 
 import { ScopedWorkspaceContextFactory } from 'src/engine/twenty-orm/factories/scoped-workspace-context.factory';
 import { TwentyORMGlobalManager } from 'src/engine/twenty-orm/twenty-orm-global.manager';
@@ -288,7 +289,7 @@ export class TribDataMigrationService {
         .innerJoin('message.messageParticipants', 'participant')
         .getCount(),
       participantRepository.count(),
-      participantRepository.count({ where: { personId: { $ne: null } } }),
+      participantRepository.count({ where: { personId: Not(IsNull()) } }),
     ]);
 
     return {

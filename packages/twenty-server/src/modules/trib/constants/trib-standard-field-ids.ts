@@ -331,3 +331,16 @@ export const TRIB_MESSAGE_PARTICIPANT_FIELD_IDS = {
    */
   tribMessage: '20202020-9004-4a1b-8c2d-3e4f5a6b7c80',
 };
+
+/**
+ * Consolidated TRIB field IDs - All field IDs grouped by entity type
+ * Used for type definitions and field ID validation across the TRIB system
+ */
+export const TRIB_FIELD_IDS = {
+  MESSAGE: MESSAGE_FIELD_IDS,
+  THREAD: THREAD_FIELD_IDS,
+  CONSENT: CONSENT_FIELD_IDS,
+  PHONE_NUMBER: PHONE_NUMBER_FIELD_IDS,
+  DELIVERY: DELIVERY_FIELD_IDS,
+  MESSAGE_PARTICIPANT: TRIB_MESSAGE_PARTICIPANT_FIELD_IDS,
+} as const;
