@@ -4,7 +4,7 @@ on:
   push:
     branches: [main, dev]
     paths:
-      - '../gateway/docker/postgres/**'
+      - 'docker/postgres/**'
       - '.github/workflows/postgres-deploy.yml'
   workflow_dispatch:
 
@@ -46,8 +46,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ../gateway/docker/postgres
-          file: ../gateway/docker/postgres/Dockerfile
+          context: ./docker/postgres
+          file: ./docker/postgres/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
