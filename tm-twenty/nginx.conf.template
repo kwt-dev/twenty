@@ -21,6 +21,15 @@ server {
         proxy_set_header Connection "upgrade";
     }
 
+    # Client config endpoint proxy
+    location /client-config {
+        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/client-config;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     # GraphQL proxy to backend
     location /graphql {
         proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/graphql;
