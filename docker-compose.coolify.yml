@@ -1,0 +1,248 @@
+services:
+  postgres:
+    image: 'ghcr.io/kwt-dev/twenty-postgres:dev-latest'
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: twenty
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      POSTGRES_HOST_AUTH_METHOD: md5
+    volumes:
+      - 'postgres_data:/var/lib/postgresql/data'
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'pg_isready -U postgres -d twenty'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  redis:
+    image: 'redis:7-alpine'
+    restart: unless-stopped
+    command:
+      - redis-server
+      - '--maxmemory-policy'
+      - noeviction
+    volumes:
+      - 'redis_data:/data'
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+  twenty-backend:
+    image: 'ghcr.io/kwt-dev/twenty/twenty-backend:dev-latest'
+    restart: unless-stopped
+    expose:
+      - '3200'
+    environment:
+      NODE_ENV: production
+      NODE_PORT: 3200
+      APP_VERSION: '${APP_VERSION}'
+      APP_SECRET: '${APP_SECRET}'
+      PG_DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/twenty'
+      REDIS_URL: 'redis://redis:6379/2'
+      SERVER_URL: '${SERVER_URL}'
+      STORAGE_TYPE: local
+      DISABLE_DB_MIGRATIONS: false
+      DISABLE_CRON_JOBS_REGISTRATION: false
+      IS_CONFIG_VARIABLES_IN_DB_ENABLED: false
+      MESSAGING_PROVIDER_GMAIL_ENABLED: '${MESSAGING_PROVIDER_GMAIL_ENABLED}'
+      CALENDAR_PROVIDER_GOOGLE_ENABLED: '${CALENDAR_PROVIDER_GOOGLE_ENABLED}'
+      AUTH_GOOGLE_CLIENT_ID: '${AUTH_GOOGLE_CLIENT_ID}'
+      AUTH_GOOGLE_CLIENT_SECRET: '${AUTH_GOOGLE_CLIENT_SECRET}'
+      AUTH_GOOGLE_CALLBACK_URL: '${AUTH_GOOGLE_CALLBACK_URL}'
+      AUTH_GOOGLE_APIS_CALLBACK_URL: '${AUTH_GOOGLE_APIS_CALLBACK_URL}'
+    volumes:
+      - 'twenty_data:/app/packages/twenty-server/.local-storage'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1:3200/healthz'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+  twenty-worker:
+    image: 'ghcr.io/kwt-dev/twenty/twenty-backend:dev-latest'
+    restart: unless-stopped
+    command:
+      - yarn
+      - 'worker:prod'
+    environment:
+      NODE_ENV: production
+      NODE_PORT: 3200
+      APP_VERSION: '${APP_VERSION}'
+      APP_SECRET: '${APP_SECRET}'
+      PG_DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/twenty'
+      REDIS_URL: 'redis://redis:6379/2'
+      SERVER_URL: '${SERVER_URL}'
+      STORAGE_TYPE: local
+      DISABLE_DB_MIGRATIONS: true
+      DISABLE_CRON_JOBS_REGISTRATION: true
+      IS_CONFIG_VARIABLES_IN_DB_ENABLED: false
+      MESSAGING_PROVIDER_GMAIL_ENABLED: '${MESSAGING_PROVIDER_GMAIL_ENABLED}'
+      CALENDAR_PROVIDER_GOOGLE_ENABLED: '${CALENDAR_PROVIDER_GOOGLE_ENABLED}'
+      AUTH_GOOGLE_CLIENT_ID: '${AUTH_GOOGLE_CLIENT_ID}'
+      AUTH_GOOGLE_CLIENT_SECRET: '${AUTH_GOOGLE_CLIENT_SECRET}'
+      AUTH_GOOGLE_CALLBACK_URL: '${AUTH_GOOGLE_CALLBACK_URL}'
+      AUTH_GOOGLE_APIS_CALLBACK_URL: '${AUTH_GOOGLE_APIS_CALLBACK_URL}'
+    volumes:
+      - 'twenty_data:/app/packages/twenty-server/.local-storage'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      twenty-backend:
+        condition: service_healthy
+  twenty-frontend:
+    image: 'ghcr.io/kwt-dev/twenty/twenty-frontend:dev-latest'
+    restart: unless-stopped
+    expose:
+      - '80'
+    environment:
+      BACKEND_HOST: twenty-backend
+      BACKEND_PORT: 3200
+      REACT_APP_SERVER_BASE_URL: '${REACT_APP_SERVER_BASE_URL}'
+      NODE_PORT: '${NODE_PORT}'
+      STORAGE_TYPE: '${STORAGE_TYPE}'
+      DISABLE_DB_MIGRATIONS: '${DISABLE_DB_MIGRATIONS}'
+      DISABLE_CRON_JOBS_REGISTRATION: '${DISABLE_CRON_JOBS_REGISTRATION}'
+      IS_CONFIG_VARIABLES_IN_DB_ENABLED: '${IS_CONFIG_VARIABLES_IN_DB_ENABLED}'
+    depends_on:
+      twenty-backend:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - '-f'
+        - 'http://127.0.0.1/health'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+  calcom:
+    image: 'calcom.docker.scarf.sh/calcom/cal.com:latest'
+    restart: unless-stopped
+    expose:
+      - '3000'
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/calcom'
+      DATABASE_DIRECT_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/calcom'
+      NEXT_PUBLIC_WEBAPP_URL: 'https://cal.kingswindowtint.com'
+      BUILT_NEXT_PUBLIC_WEBAPP_URL: 'http://localhost:3000'
+      NEXTAUTH_URL: 'https://cal.kingswindowtint.com/api/auth'
+      WEBAPP_URL: 'https://cal.kingswindowtint.com'
+      NEXT_PUBLIC_API_V2_URL: 'https://calapi.kingswindowtint.com'
+      NEXTAUTH_SECRET: '${NEXTAUTH_SECRET}'
+      CALENDSO_ENCRYPTION_KEY: '${CALENDSO_ENCRYPTION_KEY}'
+      ALLOWED_CORS_ORIGINS: '*'
+      API_CORS_ALLOW_ORIGIN: '*'
+      NEXT_PUBLIC_LICENSE_CONSENT: agree
+      NEXT_PUBLIC_IS_E2E: 1
+      REDIS_URL: 'redis://redis:6379/1'
+      CALCOM_TELEMETRY_DISABLED: 1
+      API_KEY_PREFIX: '${API_KEY_PREFIX:-cal_}'
+      CALCOM_LICENSE_KEY: '${CALCOM_LICENSE_KEY:-agree}'
+      NEXT_PUBLIC_IS_SELF_HOSTED: true
+      ORGANIZATIONS_ENABLED: '${ORGANIZATIONS_ENABLED:-0}'
+      NEXT_PUBLIC_IS_PLATFORM: false
+      EMAIL_FROM: '${EMAIL_FROM:-notifications@cal.kingswindowtint.com}'
+      EMAIL_SERVER_HOST: '${EMAIL_SERVER_HOST:-}'
+      EMAIL_SERVER_PORT: '${EMAIL_SERVER_PORT:-587}'
+      EMAIL_SERVER_USER: '${EMAIL_SERVER_USER:-}'
+      EMAIL_SERVER_PASSWORD: '${EMAIL_SERVER_PASSWORD:-}'
+      GOOGLE_API_CREDENTIALS: '${GOOGLE_API_CREDENTIALS:-{}}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - '--spider'
+        - 'http://localhost:3000'
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 180s
+  calcom-api-v2:
+    image: 'kwtdev/calcom-api-v2:amd64'
+    restart: unless-stopped
+    expose:
+      - '5555'
+    environment:
+      NODE_ENV: production
+      API_PORT: 5555
+      API_URL: 'https://calapi.kingswindowtint.com'
+      DATABASE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/calcom'
+      DATABASE_READ_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/calcom'
+      DATABASE_WRITE_URL: 'postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/calcom'
+      REDIS_URL: 'redis://redis:6379/1'
+      WEB_APP_URL: 'https://cal.kingswindowtint.com'
+      WEBAPP_URL: 'https://cal.kingswindowtint.com'
+      NEXT_PUBLIC_WEBAPP_URL: 'https://cal.kingswindowtint.com'
+      NEXTAUTH_SECRET: '${NEXTAUTH_SECRET}'
+      CALENDSO_ENCRYPTION_KEY: '${CALENDSO_ENCRYPTION_KEY}'
+      JWT_SECRET: '${JWT_SECRET:-${NEXTAUTH_SECRET}}'
+      API_KEY_PREFIX: '${API_KEY_PREFIX:-cal_}'
+      ALLOWED_CORS_ORIGINS: 'http://localhost:3000,https://cal.kingswindowtint.com,http://localhost:5173,http://localhost:5174,https://calapi.kingswindowtint.com'
+      API_CORS_ALLOW_ORIGIN: '*'
+      STRIPE_API_KEY: '${STRIPE_API_KEY:-}'
+      STRIPE_WEBHOOK_SECRET: '${STRIPE_WEBHOOK_SECRET:-}'
+      STRIPE_TEAM_MONTHLY_PRICE_ID: '${STRIPE_TEAM_MONTHLY_PRICE_ID:-}'
+      IS_TEAM_BILLING_ENABLED: '${IS_TEAM_BILLING_ENABLED:-false}'
+      GET_LICENSE_KEY_URL: '${GET_LICENSE_KEY_URL:-}'
+      LOG_LEVEL: '${LOG_LEVEL:-info}'
+      SENTRY_DSN: '${SENTRY_DSN:-}'
+      AXIOM_DATASET: '${AXIOM_DATASET:-}'
+      AXIOM_TOKEN: '${AXIOM_TOKEN:-}'
+      RATE_LIMIT_DEFAULT_TTL_MS: '${RATE_LIMIT_DEFAULT_TTL_MS:-60000}'
+      RATE_LIMIT_DEFAULT_LIMIT_API_KEY: '${RATE_LIMIT_DEFAULT_LIMIT_API_KEY:-1000}'
+      RATE_LIMIT_DEFAULT_LIMIT_OAUTH_CLIENT: '${RATE_LIMIT_DEFAULT_LIMIT_OAUTH_CLIENT:-1000}'
+      RATE_LIMIT_DEFAULT_LIMIT_ACCESS_TOKEN: '${RATE_LIMIT_DEFAULT_LIMIT_ACCESS_TOKEN:-1000}'
+      RATE_LIMIT_DEFAULT_LIMIT: '${RATE_LIMIT_DEFAULT_LIMIT:-1000}'
+      RATE_LIMIT_DEFAULT_BLOCK_DURATION_MS: '${RATE_LIMIT_DEFAULT_BLOCK_DURATION_MS:-60000}'
+      REWRITE_API_V2_PREFIX: '1'
+      IS_E2E: 'false'
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: '${NEXT_PUBLIC_VAPID_PUBLIC_KEY:-}'
+      VAPID_PRIVATE_KEY: '${VAPID_PRIVATE_KEY:-}'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      calcom:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - '-e'
+        - "require('http').get('http://localhost:5555/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+volumes:
+  postgres_data: null
+  redis_data: null
+  twenty_data: null
+  turbo_cache: null
