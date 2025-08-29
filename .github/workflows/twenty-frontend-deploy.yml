@@ -73,3 +73,4 @@ jobs:
           echo "3. Set port: 80 (nginx serves on port 80)" >> $GITHUB_STEP_SUMMARY
           echo "4. Configure health check: /health on port 80" >> $GITHUB_STEP_SUMMARY
           echo "5. Ensure backend service is available at tintmeta-twenty-backend:3200" >> $GITHUB_STEP_SUMMARY
+
