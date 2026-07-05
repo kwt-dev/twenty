@@ -58,7 +58,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           no-cache: true
           build-args: |
-            REACT_APP_SERVER_BASE_URL=https://app.kingswindowtint.com
+            REACT_APP_SERVER_BASE_URL=${{ vars.REACT_APP_SERVER_BASE_URL || 'http://localhost:3200' }}
 
       - name: Deployment complete
         run: |
